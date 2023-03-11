@@ -9,17 +9,10 @@ workflows:
             branches:
               only:
                 - main
-      - deploy:
-          filters:
-            branches:
-              only:
-                - main
-          requires:
-            - build
         
 jobs:
   build:
-    working_directory: ~/ExampleApplication
+    working_directory: ~/DevOpsCA
     docker:
       - image: circleci/node:latest
     steps:
