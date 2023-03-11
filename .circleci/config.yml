@@ -16,11 +16,11 @@ jobs:
     working_directory: ~\DevOpsCA
     docker:
       - image: circleci/node:10.16.3
-      steps:
+    steps:
         - checkout
         - run:
             name: update-npn
-            command: 'sudo npm install -g npm@5'
+            command: sudo npm install -g npm@5
         - restore_cache:
             key: dependency-cache-{{ checksum "package-lock.json" }}
         - run:
