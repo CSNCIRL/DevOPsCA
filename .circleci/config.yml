@@ -1,4 +1,5 @@
 version: 2.1
+
 workflows:
   version: 2
   build:
@@ -7,22 +8,30 @@ workflows:
           filters:
             branches:
               only:
-                - main: null
+                - main
+      - deploy:
+          filters:
+            branches:
+              only:
+                - main
+          requires:
+            - build
+        
 jobs:
   build:
-    working_directory: ~\DevOpsCA
+    working_directory: ~/ExampleApplication
     docker:
-      - image: circleci/node:10.16.3
+      - image: circleci/node:latest
     steps:
       - checkout
-      - run:
-          name: update-npn
-          command: sudo npm install -g npm@5
+      - run: 
+          name: update-npm
+          command: 'sudo npm install -g npm@8.1.4'
       - restore_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
-          name: install-npm
-          command: npm install
+          name: install-npm-wee
+          command: npm install       
       - save_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
