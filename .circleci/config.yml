@@ -44,6 +44,6 @@ jobs:
     steps:
       - run: 
           name: deploy-application
-          command: ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_PUBLIC_DNS "rm -rf DevOpsCA/; git clone https://github.com/CSNCIRL/DevOPsCA.git; source deploy.sh"
+          command: ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_PUBLIC_DNS "sudo rm -r DevOPsCA/; git clone https://github.com/CSNCIRL/DevOPsCA.git; source DevOPsCA/deploy.sh"
 # deployment successful
     
