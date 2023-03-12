@@ -9,10 +9,18 @@ workflows:
             branches:
               only:
                 - main
-        
+      - deploy:
+          filters:
+            branches:
+              only:
+                - main
+          requires:
+            - build    
+
+# Define the jobs to run
 jobs:
   build:
-    working_directory: ~/DevOPsCA
+    working_directory: ~/DevOpsCA
     docker:
       - image: circleci/node:latest
     steps:
@@ -22,12 +30,12 @@ jobs:
           command: 'sudo npm install -g npm@8.1.4'
       - restore_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
-       - run:
+      - run:
           name: install-npm-wee
-          command: npm install  
-       - run:
+          command: npm install    
+      - run:
           name: test-run
-          command: npm run test       
+          command: npm run test         
       - save_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
           paths:
