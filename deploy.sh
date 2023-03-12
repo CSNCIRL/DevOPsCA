@@ -7,7 +7,7 @@ sudo apt update && sudo apt install nodejs npm
 sudo npm install -g pm2
 
 # stop any instance of our application running currently
-pm2 stop example_app
+pm2 stop Devapp
 
 # change directory into folder where application is downloaded
 cd DevOPsCA/
