@@ -1,20 +1,21 @@
 #!/usr/bin/env bash 
-sudo apt update && sudo apt install nodejs npm
+CURRENT_INSTANCE=$(docker ps -a -q --filter ancestor="$IMAGE_NAME" --format="{{.ID}}")
+if [ "$CURRENT_INSTANCE" ]
+then
+  docker rm $(docker stop $CURRENT_INSTANCE)
+fi
 
-# Install pm2 which is a production process manager for Node.js with a built-in load balancer.
-sudo npm install -g pm2
+docker pull $IMAGE_NAME
 
-# stop any instance of our application running currently
-pm2 stop Devapp
+CONTAINER_EXISTS=$(docker ps -a | grep $CONTAINER_NAME)
+if [ "$CONTAINER_EXISTS" ] 
+then
+  docker rm $CONTAINER_NAME
+fi
 
-# change directory into folder where application is downloaded
-cd DevOPsCA/
-
-# Install application dependancies
-npm install
-
+docker create -p 8443:8443 --name $CONTAINER_NAME $IMAGE_NAME
 echo $PRIVATE_KEY > privatekey.pem
 echo $SERVER > server.crt
-
-# Start the application with the process name example_app using pm2
-pm2 start ./bin/www --name Devapp
+docker cp ./privatekey.pem $CONTAINER_NAME:/privatekey.pem
+docker cp ./server.crt $CONTAINER_NAME:/server.crt
+docker start $CONTAINER_NAME
