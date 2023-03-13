@@ -14,40 +14,53 @@ workflows:
             branches:
               only:
                 - main
-          requires:
+          requires: 
             - build
-        
 
-# Define the jobs to run
 jobs:
   build:
     working_directory: ~/DevOpsCA
     docker:
-      - image: circleci/node:latest
+      - image: circleci/node:10.16.3
     steps:
       - checkout
-      - run: 
+      - setup_remote_docker
+      - run:
           name: update-npm
-          command: 'sudo npm install -g npm@8.1.4'
+          command: "sudo npm install -g npm@5"
       - restore_cache:
           key: dependency-cache-{{ checksum "package-lock.json" }}
       - run:
-          name: install-npm-wee
+          name: install-npm
           command: npm install
       - run:
           name: test-run
-          command: npm run test        
-      - save_cache:
-          key: dependency-cache-{{ checksum "package-lock.json" }}
-          paths:
-            - ./node_modules
+          command: npm run test     
+      - run:
+          name: docker-login
+          command: docker login -u $DOCKER_USERNAME -p $DOCKER_PASSWORD
+      - run:
+          name: build-docker-image
+          command: docker build -t $IMAGE_NAME:latest .
+      - run:
+          name: publish-docker-image
+          command: docker push $IMAGE_NAME
+      - run:
+          name: set-environment-variables
+          command: echo $SERVER > server.crt && echo $PRIVATE_KEY > privatekey.pem
+      - run:
+          name: build-docker-image-for-integration-environment
+          command: docker create -p 8443:8443 --name integration_app $IMAGE_NAME
+      - run:
+          name: copy-server-cert-and-private-key-accross
+          command: docker cp ./privatekey.pem integration_app:/privatekey.pem; docker cp ./server.crt integration_app:/server.crt
+      - run:
+          name: start-docker-container
+          command: docker start integration_app
   deploy:
     docker:
-      - image: circleci/node:latest
+      - image: circleci/node:10.16.3
     steps:
-      - run: 
+      - run:
           name: deploy-application
-          command: ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_PUBLIC_DNS "export SERVER=\"$SERVER\"; export PRIVATE_KEY=\"$PRIVATE_KEY\"; sudo rm -r DevOPsCA/; git clone https://github.com/CSNCIRL/DevOPsCA.git; source DevOPsCA/deploy.sh"
-          
-# deployment successful
-    
+          command: ssh -o StrictHostKeyChecking=no $EC2_USERNAME@$EC2_PUBLIC_DNS "export CONTAINER_NAME=\"$CONTAINER_NAME\";export IMAGE_NAME=\"$IMAGE_NAME\";export SERVER=\"$SERVER\";export PRIVATE_KEY=\"$PRIVATE_KEY\";sudo rm -rf DevOpsCA;git clone https://github.com/CSNCIRL/DevOPsCA;source DevOpsCA/deploy.sh"
