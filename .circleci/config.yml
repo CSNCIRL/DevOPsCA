@@ -56,7 +56,7 @@ jobs:
           command: docker cp ./privatekey.pem integration_app:/privatekey.pem; docker cp ./server.crt integration_app:/server.crt
       - run:
           name: start-docker-container
-          command: docker start integration_app
+          command: docker start integration_app $IMAGE_NAME
   deploy:
     docker:
       - image: circleci/node:10.16.3
