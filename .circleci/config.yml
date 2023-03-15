@@ -49,18 +49,6 @@ jobs:
       - run:
           name: publish-docker-image
           command: docker push $IMAGE_NAME
-      - run:
-          name: set-environment-variables
-          command: echo $SERVER > server.crt && echo $PRIVATE_KEY > privatekey.pem
-      - run:
-          name: build-docker-image-for-integration-environment
-          command: docker create -p 8443:8443 --name integration_app $IMAGE_NAME
-      - run:
-          name: copy-server-cert-and-private-key-accross
-          command: docker cp ./privatekey.pem integration_app:/privatekey.pem; docker cp ./server.crt integration_app:/server.crt
-      - run:
-          name: start-docker-container
-          command: docker start integration_app
   deploy:
     docker:
       - image: circleci/node:10.16.3
